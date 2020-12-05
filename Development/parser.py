@@ -2,6 +2,8 @@ import sys
 import pandas as pd
 import sklearn
 import numpy as np
+from utils import *
+from unidecode import unidecode
 
 if __name__ == "__main__":
 
@@ -9,13 +11,18 @@ if __name__ == "__main__":
     read_file.to_csv('mps.dataset.csv', index = None, header = True)
     df = pd.DataFrame(pd.read_csv("mps.dataset.csv"))
 
+    # to_lower everything
+    df = df.apply(lambda x : x.astype(str).str.lower())
     
-    # a = pd.get_dummies(df, columns = ['sex']).head()
-    # print(a)
+    # remove all diacritics
+    for col in df.columns:
+        df[col] = df[col].apply(unidecode)
+
+    # **************************************************************************
 
     # encode sex column
-    df['sex'] = np.where(df['sex'].str.startswith('MASC' or 'masc' or 'M' or 'm'), 'masculin', 'feminin')
-    a = pd.get_dummies(df, columns = ['sex']).head()
+    df['sex'] = np.where(df['sex'].str.startswith('masc' or 'm'), 'masculin', 'feminin')
+    pd.get_dummies(df, columns=['sex'], prefix = '', prefix_sep = '')
 
     # drop 'institutia sursa' column     
     df.drop('instituția sursă', axis = 1, inplace = True)
@@ -29,18 +36,42 @@ if __name__ == "__main__":
     df['vârstă'] = df['vârstă'].cat.add_categories('unknown').fillna('unknown')
     
     # encode 'simptome declarate' column
+    value = []
+    for s in df['simptome declarate']:
+        value.append(len([word for word in simptoms if word in str(s).lower()]))
+
+    df['simptome declarate'] = value
+
+
+    # encode 'simptome raportate la internare' column
+    value = []
+    for s in df['simptome raportate la internare']:
+        value.append(len([word for word in simptoms if word in str(s).lower()]))
+
+    df['simptome raportate la internare'] = value
+
+
+    # encode 'rezultat testare' column
+    value = []
+    for r in df['rezultat testare']:
+        if str(r).startswith('neg'):
+            value.append('negativ')
+        elif str(r).startswith('poz'):
+            value.append('pozitiv')
+        else:
+            value.append('neconcludent')
+    df['rezultat testare'] = value
+    pd.get_dummies(df, columns=['rezultat testare'], prefix = '', prefix_sep = '')
+
+
+    # encode 'confirmare contact cu o persoană infectată' column
+    df['confirmare contact cu o persoană infectată'] = np.where(
+        df['confirmare contact cu o persoană infectată'].str.contains('da'), 
+        'da', 'nu'
+    )
+    pd.get_dummies(df, columns=['confirmare contact cu o persoană infectată'], prefix = '', prefix_sep = '')
     
-    #print(df['simptome declarate'].value_counts().keys().tolist())
-    simptoms = ['tuse', 'dispnee', 'febra', 'frison', 'frisoane', 'temperatura', 'gust', 'miros', 'cefalee']
-    #df['vârstă'] = np.where(df['simptome declarate'].str., df['vârstă'], -1)
-
-    
-    # frequency = len([word for words in simptoms if word in df['simptome declarate']])
-    # df['simptome declarate'] = np.where(frequency > 0, frequency, 0)
-
-
-
-
+    #print(df['confirmare contact cu o persoană infectată'].value_counts())
     
 
 
