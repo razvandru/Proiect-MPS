@@ -11,6 +11,11 @@ diagnostic_simptoms_lower = ['respir', 'bronhopneum', 'pneumopatie', 'frison',
                             'oboseala', 'cefalee', 'odinofag', '38.', '38,',
                             '39.', '39,', '40.', '40,', 'temp']
 
-diagnostic_simptoms_med = ['susp', 'covid19', 'covid 19', 'cov19', 'cov-2', 'cov 2', 'sars']
+diagnostic_simptoms_med = ['susp', 'cov']
 
 diagnostic_simptoms_higher = ['confirm']
+
+countries = ['franta', 'italia', 'germania', 'scotia', 
+            'anglia', 'spania', 'polonia', 'china', 
+            'israel', 'portugalia', 'belgia','cehia', 
+            'ungaria', 'olanda', 'sua', 'america', 'spital']
