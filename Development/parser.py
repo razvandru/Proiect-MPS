@@ -27,6 +27,9 @@ if __name__ == "__main__":
     # drop 'institutia sursa' column     
     df.drop('instituția sursă', axis = 1, inplace = True)
 
+    # drop 'dată internare' column
+    df.drop('dată internare', axis = 1, inplace = True)
+
     # encode age
     age_bins= [0, 18, 29, 39, 49, 64, 74, 84, 100]
     age_intervals_labels = ['0-18', '19-29', '30-39', '40-49', '50-64', '65-74', '75-84', '85-100']
@@ -38,7 +41,7 @@ if __name__ == "__main__":
     # encode 'simptome declarate' column
     value = []
     for s in df['simptome declarate']:
-        value.append(len([word for word in simptoms if word in str(s).lower()]))
+        value.append(len([word for word in simptoms if word in str(s)]))
 
     df['simptome declarate'] = value
 
@@ -46,7 +49,7 @@ if __name__ == "__main__":
     # encode 'simptome raportate la internare' column
     value = []
     for s in df['simptome raportate la internare']:
-        value.append(len([word for word in simptoms if word in str(s).lower()]))
+        value.append(len([word for word in simptoms if word in str(s)]))
 
     df['simptome raportate la internare'] = value
 
@@ -70,8 +73,22 @@ if __name__ == "__main__":
         'da', 'nu'
     )
     pd.get_dummies(df, columns=['confirmare contact cu o persoană infectată'], prefix = '', prefix_sep = '')
+
+
+    # encode 'diagnostic și semne de internare' column
+    value = []
+    i = 0
+    for s in df['diagnostic și semne de internare']:
+        sum = 0
+        sum += len([word for word in diagnostic_simptoms_lower if word in str(s)])
+        sum += 2 * len([word for word in diagnostic_simptoms_med if word in str(s)])
+        sum += 4 * len([word for word in diagnostic_simptoms_higher if word in str(s)])
+        value.append(sum)
+        print('Sum = {} ; Boli = {} ; Rezultat = {}'.format(sum, s, df['rezultat testare'][s]))
     
-    #print(df['confirmare contact cu o persoană infectată'].value_counts())
+    df['diagnostic și semne de internare'] = value
+    
+    print(df['diagnostic și semne de internare'].value_counts())
     
 
 
