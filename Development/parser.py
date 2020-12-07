@@ -76,12 +76,10 @@ if __name__ == "__main__":
     # encode 'rezultat testare' column
     value = []
     for r in df['rezultat testare']:
-        if str(r).startswith('neg'):
-            value.append('negativ')
-        elif str(r).startswith('poz'):
+        if str(r).startswith('poz'):
             value.append('pozitiv')
         else:
-            value.append('neconcludent')
+            value.append('negativ')
     df['rezultat testare'] = value
 
 
