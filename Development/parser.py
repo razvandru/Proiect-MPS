@@ -117,9 +117,6 @@ def parse_data(file_name):
             value.append(number)
         else:
             value.append('10+')
-        # if sum == 0 and df['rezultat testare'][i] is 'pozitiv':
-        #     print('Sum = {} ; Boli = {} ; Rezultat = {}'.format(sum, s, df['rezultat testare'][i]))
-    
     df['diagnostic și semne de internare'] = value
 
 
@@ -250,35 +247,6 @@ def IA(data,data2):
     print (classification_report(y2_test, yhat2))
     print('AUC-ROC:',roc_auc_score(y2_test, yhat2))
     print('LOGLOSS Value is',log_loss(y2_test, yhat2))
-
-
-    # # ca sa mearga modelele
-    # X_train = X_train.todense()
-
-    # # Spot Check Algorithms
-    # models = []
-    # models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
-    # models.append(('LDA', LinearDiscriminantAnalysis()))
-    # models.append(('KNN', KNeighborsClassifier()))
-    # models.append(('CART', DecisionTreeClassifier()))
-    # models.append(('NB', GaussianNB()))
-    # models.append(('SVM', SVC(gamma='auto')))
-
-    # # evaluate each model in turn
-    # results = []
-    # model_names = []
-    # for name, model in models:
-    #     kfold = StratifiedKFold(n_splits=10, random_state=1, shuffle=True)
-    #     cv_results = cross_val_score(model, X_train, y_train, cv=kfold, scoring='accuracy')
-    #     results.append(cv_results)
-    #     model_names.append(name)
-    #     print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
-
-    # print(confusion_matrix(y_test, predictions))
-    # print(classification_report(y_test, predictions))
-
-
-    
 
 
 if __name__ == "__main__":
