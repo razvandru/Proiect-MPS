@@ -283,6 +283,6 @@ def IA(data,data2):
 
 if __name__ == "__main__":
     data = parse_data('mps.dataset.xlsx')
-    data2 = parse_data('mps.dataset.test.500.xlsx')
+    data2 = parse_data('')
     IA(data,data2)
     
