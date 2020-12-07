@@ -26,6 +26,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import log_loss
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
 
 def parse_data(file_name):
 
@@ -43,7 +46,7 @@ def parse_data(file_name):
     # **************************************************************************
 
     # drop 'institutia sursa' column     
-    df.drop('instituția sursă', axis = 1, inplace = True)
+    # df.drop('instituția sursă', axis = 1, inplace = True)
 
     # drop 'mijloace de transport folosite' column
     df.drop('mijloace de transport folosite', axis = 1, inplace = True)
@@ -63,16 +66,10 @@ def parse_data(file_name):
     value = []
     for s in df['simptome declarate']:
         number = len([word for word in simptoms if word in str(s)])
-        if number <= 0 : 
-            value.append('0')
-        elif number > 0 and number <= 2:
-            value.append('1-2')
-        elif number > 2 and number <=5:
-            value.append('3-5')
-        elif number > 5 and number <= 9:
-            value.append('6-9')
+        if(number < 5):
+            value.append(number)
         else:
-            value.append('10+')
+            value.append('5+')
             
 
     df['simptome declarate'] = value
@@ -82,16 +79,10 @@ def parse_data(file_name):
     value = []
     for s in df['simptome raportate la internare']:
         number = len([word for word in simptoms if word in str(s)])
-        if number <= 0 : 
-            value.append('0')
-        elif number > 0 and number <= 2:
-            value.append('1-2')
-        elif number > 2 and number <=5:
-            value.append('3-5')
-        elif number > 5 and number <= 9:
-            value.append('6-9')
+        if(number < 5):
+            value.append(number)
         else:
-            value.append('10+')
+            value.append('5+')
 
     df['simptome raportate la internare'] = value
 
@@ -121,15 +112,9 @@ def parse_data(file_name):
         number = 0
         number += len([word for word in diagnostic_simptoms_lower if word in str(s)])
         number += 2 * len([word for word in diagnostic_simptoms_med if word in str(s)])
-        number += 4 * len([word for word in diagnostic_simptoms_higher if word in str(s)])
-        if number <= 0 : 
-            value.append('0')
-        elif number > 0 and number <= 2:
-            value.append('1-2')
-        elif number > 2 and number <=5:
-            value.append('3-5')
-        elif number > 5 and number <= 9:
-            value.append('6-9')
+        number += 7 * len([word for word in diagnostic_simptoms_higher if word in str(s)])
+        if(number < 10):
+            value.append(number)
         else:
             value.append('10+')
         # if sum == 0 and df['rezultat testare'][i] is 'pozitiv':
@@ -227,7 +212,7 @@ def IA(data,data2):
     y2 = data2[:, -1].astype(str)
 
     # split the dataset into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size =0.25, random_state = 1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size =0.2, random_state = 1)
     # ordinal encode input variables
     onehot_encoder = OneHotEncoder(handle_unknown = 'ignore')
     onehot_encoder.fit(X_train)
@@ -247,7 +232,7 @@ def IA(data,data2):
     yhat = model.predict(X_test)
     # evaluate predictions
     accuracy = accuracy_score(y_test, yhat)
-    print('Accuracy: %.2f' % (accuracy * 100))
+    print('Accuracy for test-data: %.2f' % (accuracy * 100))
 
     ####################################
     X2_test = onehot_encoder.transform(X2)
@@ -255,16 +240,17 @@ def IA(data,data2):
 
     yhat2 = model.predict(X2_test)
     accuracy = accuracy_score(y2_test, yhat2)
-    print('Accuracy on custom input xD: %.2f' % (accuracy * 100))
+    print('Accuracy on custom input : %.2f' % (accuracy * 100))
     
     results = confusion_matrix(y2_test, yhat2)
     print ('Confusion Matrix :')
     print(results)
     print ('Accuracy Score is',accuracy_score(y2_test, yhat2))
-    print ('Classification Report : ')
-    print (classification_report(y2_test, yhat2))
     print('AUC-ROC:',roc_auc_score(y2_test, yhat2))
     print('LOGLOSS Value is',log_loss(y2_test, yhat2))
+    print('Recall Score:',recall_score(y2_test, yhat2))
+    print('f1-score: ',f1_score(y2_test, yhat2))
+    print('precision-score: ',precision_score(y2_test, yhat2))
 
 
     # # ca sa mearga modelele
