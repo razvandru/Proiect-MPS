@@ -46,7 +46,7 @@ def parse_data(file_name):
     # **************************************************************************
 
     # drop 'institutia sursa' column     
-    # df.drop('instituția sursă', axis = 1, inplace = True)
+    df.drop('instituția sursă', axis = 1, inplace = True)
 
     # drop 'mijloace de transport folosite' column
     df.drop('mijloace de transport folosite', axis = 1, inplace = True)
@@ -241,16 +241,15 @@ def IA(data,data2):
     yhat2 = model.predict(X2_test)
     accuracy = accuracy_score(y2_test, yhat2)
     print('Accuracy on custom input : %.2f' % (accuracy * 100))
-    
+
     results = confusion_matrix(y2_test, yhat2)
     print ('Confusion Matrix :')
     print(results)
     print ('Accuracy Score is',accuracy_score(y2_test, yhat2))
+    print ('Classification Report : ')
+    print (classification_report(y2_test, yhat2))
     print('AUC-ROC:',roc_auc_score(y2_test, yhat2))
     print('LOGLOSS Value is',log_loss(y2_test, yhat2))
-    print('Recall Score:',recall_score(y2_test, yhat2))
-    print('f1-score: ',f1_score(y2_test, yhat2))
-    print('precision-score: ',precision_score(y2_test, yhat2))
 
 
     # # ca sa mearga modelele
