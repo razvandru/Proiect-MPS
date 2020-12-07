@@ -24,12 +24,14 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import log_loss
 
-if __name__ == "__main__":
+def parse_data(file_name):
 
-    read_file = pd.read_excel('mps.dataset.xlsx')
-    read_file.to_csv('mps.dataset.csv', index = None, header = True)
-    df = pd.DataFrame(pd.read_csv("mps.dataset.csv"))
+    read_file = pd.read_excel(file_name)
+    read_file.to_csv(file_name+'.csv', index = None, header = True)
+    df = pd.DataFrame(pd.read_csv(file_name+'.csv'))
 
     # to_lower everything
     df = df.apply(lambda x : x.astype(str).str.lower())
@@ -60,7 +62,18 @@ if __name__ == "__main__":
     # encode 'simptome declarate' column
     value = []
     for s in df['simptome declarate']:
-        value.append(len([word for word in simptoms if word in str(s)]))
+        number = len([word for word in simptoms if word in str(s)])
+        if number <= 0 : 
+            value.append('0')
+        elif number > 0 and number <= 2:
+            value.append('1-2')
+        elif number > 2 and number <=5:
+            value.append('3-5')
+        elif number > 5 and number <= 9:
+            value.append('6-9')
+        else:
+            value.append('10+')
+            
 
     df['simptome declarate'] = value
 
@@ -68,7 +81,17 @@ if __name__ == "__main__":
     # encode 'simptome raportate la internare' column
     value = []
     for s in df['simptome raportate la internare']:
-        value.append(len([word for word in simptoms if word in str(s)]))
+        number = len([word for word in simptoms if word in str(s)])
+        if number <= 0 : 
+            value.append('0')
+        elif number > 0 and number <= 2:
+            value.append('1-2')
+        elif number > 2 and number <=5:
+            value.append('3-5')
+        elif number > 5 and number <= 9:
+            value.append('6-9')
+        else:
+            value.append('10+')
 
     df['simptome raportate la internare'] = value
 
@@ -95,11 +118,20 @@ if __name__ == "__main__":
     i = -1
     for s in df['diagnostic și semne de internare']:
         i += 1
-        sum = 0
-        sum += len([word for word in diagnostic_simptoms_lower if word in str(s)])
-        sum += 2 * len([word for word in diagnostic_simptoms_med if word in str(s)])
-        sum += 4 * len([word for word in diagnostic_simptoms_higher if word in str(s)])
-        value.append(sum)
+        number = 0
+        number += len([word for word in diagnostic_simptoms_lower if word in str(s)])
+        number += 2 * len([word for word in diagnostic_simptoms_med if word in str(s)])
+        number += 4 * len([word for word in diagnostic_simptoms_higher if word in str(s)])
+        if number <= 0 : 
+            value.append('0')
+        elif number > 0 and number <= 2:
+            value.append('1-2')
+        elif number > 2 and number <=5:
+            value.append('3-5')
+        elif number > 5 and number <= 9:
+            value.append('6-9')
+        else:
+            value.append('10+')
         # if sum == 0 and df['rezultat testare'][i] is 'pozitiv':
         #     print('Sum = {} ; Boli = {} ; Rezultat = {}'.format(sum, s, df['rezultat testare'][i]))
     
@@ -180,17 +212,22 @@ if __name__ == "__main__":
 
     
     # *********************************************************************************************
-    # SOME MACHINE LEARNING SHIT
+    # SOME MACHINE LEARNING 
     
-    df.to_csv('mps.dataset_clean.csv', index = True, quoting = csv.QUOTE_ALL)
-    dataset = pd.read_csv('mps.dataset_clean.csv', index_col = 0)
+    df.to_csv(file_name+'_clean.csv', index = True, quoting = csv.QUOTE_ALL)
+    dataset = pd.read_csv(file_name+'_clean.csv', index_col = 0)
     data = dataset.values
+    return data
 
+def IA(data,data2):
     X = data[:, :-1].astype(str)
     y = data[:, -1].astype(str)
-     
+
+    X2 = data2[:,:-1].astype(str)
+    y2 = data2[:, -1].astype(str)
+
     # split the dataset into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size =0.25, random_state = 1)
     # ordinal encode input variables
     onehot_encoder = OneHotEncoder(handle_unknown = 'ignore')
     onehot_encoder.fit(X_train)
@@ -202,53 +239,65 @@ if __name__ == "__main__":
     y_train = label_encoder.transform(y_train)
     y_test = label_encoder.transform(y_test)
     
-    # # define the model
-    # model = LogisticRegression()
-    # # fit on the training set
-    # model.fit(X_train, y_train)
-    # # predict on test set
-    # yhat = model.predict(X_test)
-    # # evaluate predictions
-    # accuracy = accuracy_score(y_test, yhat)
-    # print('Accuracy: %.2f' % (accuracy * 100))
-    
-
-
-
-    # ca sa mearga modelele
-    X_train = X_train.todense()
-
-    # Spot Check Algorithms
-    models = []
-    models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
-    models.append(('LDA', LinearDiscriminantAnalysis()))
-    models.append(('KNN', KNeighborsClassifier()))
-    models.append(('CART', DecisionTreeClassifier()))
-    models.append(('NB', GaussianNB()))
-    models.append(('SVM', SVC(gamma='auto')))
-
-    # evaluate each model in turn
-    results = []
-    model_names = []
-    for name, model in models:
-        kfold = StratifiedKFold(n_splits=10, random_state=1, shuffle=True)
-        cv_results = cross_val_score(model, X_train, y_train, cv=kfold, scoring='accuracy')
-        results.append(cv_results)
-        model_names.append(name)
-        print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
-
-
-    # Make predictions on validation dataset
-    model = SVC(gamma='auto')
+    #define the model
+    model = LogisticRegression()
+    # fit on the training set
     model.fit(X_train, y_train)
-    predictions = model.predict(X_test)
+    # predict on test set
+    yhat = model.predict(X_test)
+    # evaluate predictions
+    accuracy = accuracy_score(y_test, yhat)
+    print('Accuracy: %.2f' % (accuracy * 100))
 
-    # Evaluate predictions
-    print(accuracy_score(y_test, predictions))
+    ####################################
+    X2_test = onehot_encoder.transform(X2)
+    y2_test = label_encoder.transform(y2)
+
+    yhat2 = model.predict(X2_test)
+    accuracy = accuracy_score(y2_test, yhat2)
+    print('Accuracy on custom input xD: %.2f' % (accuracy * 100))
+    
+    results = confusion_matrix(y2_test, yhat2)
+    print ('Confusion Matrix :')
+    print(results)
+    print ('Accuracy Score is',accuracy_score(y2_test, yhat2))
+    print ('Classification Report : ')
+    print (classification_report(y2_test, yhat2))
+    print('AUC-ROC:',roc_auc_score(y2_test, yhat2))
+    print('LOGLOSS Value is',log_loss(y2_test, yhat2))
+
+
+    # # ca sa mearga modelele
+    # X_train = X_train.todense()
+
+    # # Spot Check Algorithms
+    # models = []
+    # models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
+    # models.append(('LDA', LinearDiscriminantAnalysis()))
+    # models.append(('KNN', KNeighborsClassifier()))
+    # models.append(('CART', DecisionTreeClassifier()))
+    # models.append(('NB', GaussianNB()))
+    # models.append(('SVM', SVC(gamma='auto')))
+
+    # # evaluate each model in turn
+    # results = []
+    # model_names = []
+    # for name, model in models:
+    #     kfold = StratifiedKFold(n_splits=10, random_state=1, shuffle=True)
+    #     cv_results = cross_val_score(model, X_train, y_train, cv=kfold, scoring='accuracy')
+    #     results.append(cv_results)
+    #     model_names.append(name)
+    #     print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
+
     # print(confusion_matrix(y_test, predictions))
     # print(classification_report(y_test, predictions))
 
 
     
 
+
+if __name__ == "__main__":
+    data = parse_data('mps.dataset.xlsx')
+    data2 = parse_data('mps.dataset.test.500.xlsx')
+    IA(data,data2)
     
