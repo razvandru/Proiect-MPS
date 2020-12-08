@@ -1,1 +1,3 @@
 # Proiect-MPS
+
+Echipa HoGal
